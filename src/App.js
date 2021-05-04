@@ -14,8 +14,9 @@ import { makeStyles, useTheme } from '@material-ui/core/styles';
 import axios from 'axios';
 
 import ItemList from './components/items/ItemList';
-import Accordion from './components/accordions/CountryAccordion';
+import CountryAccordion from './components/accordions/CountryAccordion';
 import CategoryAccordion from './components/accordions/CategoryAccordion';
+import SortAccordion from './components/accordions/SortAccordion';
 import Pagination from './components/Pagination';
 import Spinner from './components/Spinner';
 
@@ -70,8 +71,7 @@ function ResponsiveDrawer(props) {
 	const [category, setCategory] = useState('10001');
 	const [page, setPage] = useState(0);
 	const [total, setTotal] = useState(10);
-
-	const [sortBy, setSortBy] = useState('eventdate');
+	const [sort, setSort] = useState('eventdate');
 
 	const handleDrawerToggle = () => {
 		setMobileOpen(!mobileOpen);
@@ -87,15 +87,18 @@ function ResponsiveDrawer(props) {
 		}
 	};
 
-	// PAGINATION
 	const onPageChange = val => {
 		setPage(val);
+	};
+
+	const onSortChange = val => {
+		setSort(val);
 	};
 
 	const fetchData = async () => {
 		setLoading(true);
 		const res = await axios.get(
-			`https://app.ticketmaster.eu/amplify/v2/events?apikey=3emDiWvgsjWAX84KicT04Sibk9XAsX88&domain=${domain}&lang=en-us&category_ids=${category}&sort_by=${sortBy}&start=${page}&rows=20`
+			`https://app.ticketmaster.eu/amplify/v2/events?apikey=3emDiWvgsjWAX84KicT04Sibk9XAsX88&domain=${domain}&lang=en-us&category_ids=${category}&sort_by=${sort}&start=${page}&rows=20`
 		);
 
 		if (res.status === 200) {
@@ -113,7 +116,7 @@ function ResponsiveDrawer(props) {
 
 	useEffect(() => {
 		fetchData();
-	}, [domain, category, sortBy, page, total]);
+	}, [domain, category, sort, page, total]);
 
 	// SORT DRAWER
 	const drawer = (
@@ -121,7 +124,7 @@ function ResponsiveDrawer(props) {
 			<div className={classes.toolbar} />
 			<Divider />
 			<List>
-				<Accordion
+				<CountryAccordion
 					title={'Country'}
 					values={['Germany', 'Spain', 'Poland']}
 					marked={domain}
@@ -130,9 +133,15 @@ function ResponsiveDrawer(props) {
 				<CategoryAccordion
 					title={'Category'}
 					marked={category}
+					onSortChange={onSortChange}
 					onRadioChange={onRadioChange}
 				/>
-				{/* <Accordion title={'Sort'} values /> */}
+				<SortAccordion
+					title={'Sort'}
+					marked={sort}
+					values={['Eventdate', 'Popularity', 'Eventname']}
+					onSortChange={onSortChange}
+				/>
 			</List>
 			<Divider />
 		</div>
