@@ -4,27 +4,27 @@ import RadioGroup from '@material-ui/core/RadioGroup';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import FormControl from '@material-ui/core/FormControl';
 
-export default function RadioButtonsGroup({ text, marked, onRadioChange }) {
+export default function RadioButtonsGroup({ values, marked, onCountryChange }) {
 	const [option, setOption] = React.useState(marked);
 
 	const handleChange = ev => {
 		setOption(ev.target.value);
+		onCountryChange(option);
 	};
 
 	React.useEffect(() => {
-		onRadioChange(option);
-	}, [option]);
+		onCountryChange(option);
+	}, [option, onCountryChange]);
 
 	return (
 		<FormControl component="fieldset">
-			<RadioGroup aria-label="Country">
-				{text.map(val => (
+			<RadioGroup aria-label="Country" onChange={handleChange}>
+				{values.map(val => (
 					<FormControlLabel
 						control={<Radio />}
 						label={val}
 						value={val}
 						checked={val === option ? true : false}
-						onChange={handleChange}
 					/>
 				))}
 			</RadioGroup>

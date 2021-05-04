@@ -53,8 +53,8 @@ const useStyles = makeStyles(theme => ({
 		flexGrow: 1,
 		padding: theme.spacing(3),
 	},
-	isGrid: {
-		background: 'black',
+	change__view: {
+		margin: '2% auto',
 	},
 }));
 
@@ -64,27 +64,26 @@ function ResponsiveDrawer(props) {
 	const theme = useTheme();
 	const [mobileOpen, setMobileOpen] = useState(false);
 
+	const [isGrid, setIsGrid] = useState(true);
 	const [loading, setLoading] = useState(false);
-
 	const [results, setResults] = useState([]);
+	const [categoryList, setCategoryList] = useState([]);
 	const [domain, setDomain] = useState('Germany');
-	const [category, setCategory] = useState('10001');
+	const [category, setCategory] = useState(['10001']);
 	const [page, setPage] = useState(0);
 	const [total, setTotal] = useState(10);
-	const [sort, setSort] = useState('eventdate');
+	const [sort, setSort] = useState('Eventdate');
 
 	const handleDrawerToggle = () => {
 		setMobileOpen(!mobileOpen);
 	};
 
-	const onRadioChange = val => {
-		console.log(typeof val, val, 'u APPU');
+	const onCountryChange = val => {
+		setDomain(val);
+	};
 
-		if (val.startsWith('1')) {
-			setCategory(val);
-		} else {
-			setDomain(val);
-		}
+	const onCategoryChange = val => {
+		setCategory(val);
 	};
 
 	const onPageChange = val => {
@@ -95,30 +94,54 @@ function ResponsiveDrawer(props) {
 		setSort(val);
 	};
 
-	const fetchData = async () => {
-		setLoading(true);
-		const res = await axios.get(
-			`https://app.ticketmaster.eu/amplify/v2/events?apikey=3emDiWvgsjWAX84KicT04Sibk9XAsX88&domain=${domain}&lang=en-us&category_ids=${category}&sort_by=${sort}&start=${page}&rows=20`
-		);
-
-		if (res.status === 200) {
-			console.log(res.data.events);
-
-			setTotal(
-				Math.floor(res.data.pagination.total / res.data.pagination.rows)
+	const API_FETCH = {
+		async fetchCategories() {
+			const res = await axios.get(
+				`https://app.ticketmaster.eu/amplify/v2/categories?apikey=3emDiWvgsjWAX84KicT04Sibk9XAsX88&domain=${domain}&lang=en-us`
 			);
-			setResults(res.data.events);
-			setLoading(false);
-		} else {
-			setLoading(false);
-		}
+
+			if (res.status === 200) {
+				setCategoryList(res.data.categories);
+			}
+		},
+
+		async fetchData() {
+			setLoading(true);
+
+			const res = await axios.get(
+				`https://app.ticketmaster.eu/amplify/v2/events?apikey=3emDiWvgsjWAX84KicT04Sibk9XAsX88&lang=en-us`,
+				{
+					params: {
+						domain: domain,
+						sort_by: sort,
+						category_ids: category,
+						start: page,
+						rows: 12,
+					},
+				}
+			);
+
+			if (res.status === 200) {
+				setTotal(
+					Math.floor(res.data.pagination.total / res.data.pagination.rows)
+				);
+				setResults(res.data.events);
+
+				setLoading(false);
+			} else {
+				setLoading(false);
+			}
+		},
 	};
 
 	useEffect(() => {
-		fetchData();
-	}, [domain, category, sort, page, total]);
+		API_FETCH.fetchCategories();
+	}, [domain]);
 
-	// SORT DRAWER
+	useEffect(() => {
+		API_FETCH.fetchData();
+	}, [category, domain, sort, page, total]);
+
 	const drawer = (
 		<div>
 			<div className={classes.toolbar} />
@@ -128,13 +151,14 @@ function ResponsiveDrawer(props) {
 					title={'Country'}
 					values={['Germany', 'Spain', 'Poland']}
 					marked={domain}
-					onRadioChange={onRadioChange}
+					onCountryChange={onCountryChange}
 				/>
 				<CategoryAccordion
+					values={categoryList}
 					title={'Category'}
 					marked={category}
 					onSortChange={onSortChange}
-					onRadioChange={onRadioChange}
+					onCategoryChange={onCategoryChange}
 				/>
 				<SortAccordion
 					title={'Sort'}
@@ -200,13 +224,20 @@ function ResponsiveDrawer(props) {
 					</Drawer>
 				</Hidden>
 			</nav>
-			<main className={`${classes.content}`}>
+			<main className={classes.content}>
 				<div className={classes.toolbar} />
+				<div className="change__view">
+					<button onClick={() => setIsGrid(true)}>Grid</button>
+					<button onClick={() => setIsGrid(false)}>List</button>
+				</div>
+
 				{loading ? (
-					<Spinner />
+					<Spinner style={{ margin: '0 auto' }} />
 				) : (
 					<>
-						<ItemList results={results} />
+						<div>
+							<ItemList isGrid={isGrid} results={results} />
+						</div>
 						<Pagination count={total} page={page} onPageChange={onPageChange} />
 					</>
 				)}

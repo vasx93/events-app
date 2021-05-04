@@ -22,7 +22,7 @@ export default function SimpleAccordion({
 	title,
 	values,
 	marked,
-	onRadioChange,
+	onCountryChange,
 }) {
 	const classes = useStyles();
 
@@ -38,9 +38,9 @@ export default function SimpleAccordion({
 				</AccordionSummary>
 				<AccordionDetails>
 					<Radio
-						text={values.map(val => val)}
+						values={values}
 						marked={marked}
-						onRadioChange={onRadioChange}
+						onCountryChange={onCountryChange}
 					/>
 				</AccordionDetails>
 			</Accordion>

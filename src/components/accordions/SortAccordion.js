@@ -37,11 +37,7 @@ export default function SimpleAccordion({
 					<Typography className={classes.heading}>{title}</Typography>
 				</AccordionSummary>
 				<AccordionDetails>
-					<Radio
-						text={values.map(val => val)}
-						marked={marked}
-						onSortChange={onSortChange}
-					/>
+					<Radio values={values} marked={marked} onSortChange={onSortChange} />
 				</AccordionDetails>
 			</Accordion>
 		</div>

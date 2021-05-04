@@ -18,7 +18,12 @@ const useStyles = makeStyles(theme => ({
 	},
 }));
 
-export default function SimpleAccordion({ title, marked, onRadioChange }) {
+export default function SimpleAccordion({
+	values,
+	title,
+	marked,
+	onCategoryChange,
+}) {
 	const classes = useStyles();
 
 	return (
@@ -32,7 +37,11 @@ export default function SimpleAccordion({ title, marked, onRadioChange }) {
 					<Typography className={classes.heading}>{title}</Typography>
 				</AccordionSummary>
 				<AccordionDetails>
-					<CategoryRadio marked={marked} onRadioChange={onRadioChange} />
+					<CategoryRadio
+						values={values}
+						marked={marked}
+						onCategoryChange={onCategoryChange}
+					/>
 				</AccordionDetails>
 			</Accordion>
 		</div>

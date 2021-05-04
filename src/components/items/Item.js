@@ -7,12 +7,15 @@ import CardContent from '@material-ui/core/CardContent';
 import CardMedia from '@material-ui/core/CardMedia';
 
 import Typography from '@material-ui/core/Typography';
+import NoImg from '../../assets/noimg.png';
 
 const useStyles = makeStyles({
 	root: {
 		maxWidth: 345,
+		maxHeight: 345,
 	},
 });
+//TODO do css for imgs, and no img found
 
 export default function Item({ item }) {
 	const classes = useStyles();
@@ -33,9 +36,7 @@ export default function Item({ item }) {
 					alt={item.name}
 					height={typeof image.height != 'undefined' ? image.height : ''}
 					width={typeof image.width != 'undefined' ? image.width : ''}
-					image={
-						typeof image.url != 'undefined' ? image.url : 'Image not found'
-					}
+					image={typeof image.url != 'undefined' ? image.url : NoImg}
 					title={item.name}
 				/>
 				<CardContent>

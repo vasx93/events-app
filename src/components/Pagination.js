@@ -21,7 +21,7 @@ export default function BasicPagination({ page, onPageChange, count }) {
 
 	React.useEffect(() => {
 		onPageChange(current);
-	}, [current]);
+	}, [current, onPageChange]);
 
 	return (
 		<div className={classes.root}>
