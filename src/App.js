@@ -15,6 +15,9 @@ import GridOnIcon from '@material-ui/icons/GridOn';
 import ListIcon from '@material-ui/icons/List';
 import axios from 'axios';
 
+import DebounceSearch from './components/DebounceSearch';
+import Search from './components/Search';
+
 import ItemList from './components/items/ItemList';
 import CountryAccordion from './components/accordions/CountryAccordion';
 import CategoryAccordion from './components/accordions/CategoryAccordion';
@@ -58,6 +61,7 @@ const useStyles = makeStyles(theme => ({
 		padding: theme.spacing(3),
 		display: 'flex',
 		flexDirection: 'column',
+		justifyContent: 'center',
 		alignItems: 'center',
 	},
 	change__view: {
@@ -73,6 +77,10 @@ const useStyles = makeStyles(theme => ({
 	item__container: {
 		width: '100%',
 	},
+	search: {
+		width: '100%',
+		margin: '0 auto',
+	},
 }));
 
 function ResponsiveDrawer(props) {
@@ -86,19 +94,36 @@ function ResponsiveDrawer(props) {
 	const [results, setResults] = useState([]);
 	const [categoryList, setCategoryList] = useState([]);
 	const [domain, setDomain] = useState('Germany');
-	const [category, setCategory] = useState(['10001']);
+	const [category, setCategory] = useState('10001');
 	const [page, setPage] = useState(0);
 	const [total, setTotal] = useState(10);
 	const [sort, setSort] = useState('Eventdate');
+	const [city, setCity] = useState('');
+	const [cityList, setCityList] = useState([]);
+	const [venue, setVenue] = useState('');
+	const [venueList, setVenueList] = useState([]);
 
 	const handleDrawerToggle = () => {
 		setMobileOpen(!mobileOpen);
 	};
 
-	const handleGrid = () => {
-		isGrid ? setIsGrid(false) : setIsGrid(true);
-	};
+	const onCitySelect = val => {
+		let newArray = val
+			.map(el => el.id)
+			.join(',')
+			.toString();
 
+		setCity(newArray);
+	};
+	const onVenueChange = val => {
+		console.log(val);
+		// let newArray = val
+		// 	.map(el => el.id)
+		// 	.join(',')
+		// 	.toString();
+
+		// setCity(newArray);
+	};
 	const onCountryChange = val => {
 		setDomain(val);
 	};
@@ -138,6 +163,8 @@ function ResponsiveDrawer(props) {
 						category_ids: category,
 						start: page,
 						rows: 12,
+						city_ids: city,
+						venue_ids: venue,
 					},
 				}
 			);
@@ -147,28 +174,101 @@ function ResponsiveDrawer(props) {
 					Math.floor(res.data.pagination.total / res.data.pagination.rows)
 				);
 				setResults(res.data.events);
-				console.log(res.data.events);
 
 				setLoading(false);
 			} else {
 				setLoading(false);
 			}
 		},
+
+		async fetchCities() {
+			let id;
+
+			if (domain === 'Germany') id = '276';
+			else if (domain === 'Spain') id = '724';
+			else if (domain === 'Poland') id = '616';
+
+			const res = await axios.get(
+				`https://app.ticketmaster.eu/amplify/v2/cities?apikey=3emDiWvgsjWAX84KicT04Sibk9XAsX88&domain=${domain}&lang=en-us&country_id=${id}`
+			);
+
+			if (res.status === 200) {
+				const firstTenResults = res.data.cities.slice(0, 10);
+				setCityList(firstTenResults);
+			}
+		},
+
+		async fetchVenues() {
+			const res = await axios.get(
+				`https://app.ticketmaster.eu/amplify/v2/venues?apikey=3emDiWvgsjWAX84KicT04Sibk9XAsX88&domain=${domain}&venue_name=${city}`
+			);
+
+			if (res.data) {
+				console.log(res.data.venues);
+				setVenueList(res.data.venues);
+			}
+
+			if (term && !results.length) {
+				search();
+			} else {
+				let timer = setTimeout(() => {
+					clearTimeout(timer);
+					if (term) {
+						search();
+					}
+				}, 750);
+
+				return () => clearTimeout(timer);
+			}
+		},
 	};
+
+	//TODO DEBOUNCER
+
+	useEffect(() => {
+		const search = async () => {
+			const res = await axios.get(
+				`https://app.ticketmaster.eu/amplify/v2/venues?apikey=3emDiWvgsjWAX84KicT04Sibk9XAsX88&domain=${domain}&venue_name=${city}`
+			);
+
+			if (res.data) {
+				console.log(res.data.venues);
+				setVenueList(res.data.venues);
+			}
+		};
+
+		if (venue && !results.length) {
+			search();
+		} else {
+			// Debouncer
+			let timer = setTimeout(() => {
+				clearTimeout(timer);
+				if (term) {
+					search();
+				}
+			}, 750);
+
+			return () => clearTimeout(timer);
+		}
+	}, [term]);
 
 	useEffect(() => {
 		API_FETCH.fetchCategories();
+		API_FETCH.fetchCities();
 	}, [domain]);
 
 	useEffect(() => {
 		API_FETCH.fetchData();
-	}, [category, domain, sort, page, total]);
+		API_FETCH.fetchVenues();
+	}, [venue, city, category, domain, sort, page, total]);
 
 	const drawer = (
 		<div>
 			<div className={classes.toolbar} />
 			<Divider />
 			<List>
+				<DebounceSearch onVenueChange={onVenueChange} items={venueList} />
+				<Search onCitySelect={onCitySelect} items={cityList} />
 				<CountryAccordion
 					title={'Country'}
 					values={['Germany', 'Spain', 'Poland']}
@@ -248,6 +348,7 @@ function ResponsiveDrawer(props) {
 			</nav>
 			<main className={classes.content}>
 				<div className={classes.toolbar} />
+
 				<div className={classes.change__view}>
 					<button
 						className={classes.change__view_button}
