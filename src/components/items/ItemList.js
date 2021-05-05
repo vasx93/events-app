@@ -5,7 +5,7 @@ import Item from './Item';
 
 const useStyles = makeStyles({
 	grid: {
-		background: 'black',
+		flexGrow: '1',
 		display: 'flex',
 		justifyContent: 'space-around',
 		alignItems: 'center',
@@ -13,11 +13,10 @@ const useStyles = makeStyles({
 	},
 
 	list: {
-		background: 'red',
-		display: 'flex',
-		flexDirection: 'column',
-		justifyContent: 'space-around',
-		alignItems: 'center',
+		display: 'grid',
+		gridTemplateColumns: '1fr',
+		gridRowGap: '3%',
+		padding: '0 5%',
 	},
 });
 
@@ -27,7 +26,7 @@ const List = ({ results, isGrid }) => {
 	const classes = useStyles();
 
 	const render = results.map(item => {
-		return <Item key={item.id} item={item} />;
+		return <Item key={item.id} item={item} isGrid={isGrid} />;
 	});
 
 	return (

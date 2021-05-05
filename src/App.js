@@ -11,6 +11,8 @@ import MenuIcon from '@material-ui/icons/Menu';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles, useTheme } from '@material-ui/core/styles';
+import GridOnIcon from '@material-ui/icons/GridOn';
+import ListIcon from '@material-ui/icons/List';
 import axios from 'axios';
 
 import ItemList from './components/items/ItemList';
@@ -25,6 +27,8 @@ const drawerWidth = 240;
 const useStyles = makeStyles(theme => ({
 	root: {
 		display: 'flex',
+		justifyContent: 'center',
+		background: '#FEFEFF',
 	},
 	drawer: {
 		[theme.breakpoints.up('sm')]: {
@@ -52,9 +56,22 @@ const useStyles = makeStyles(theme => ({
 	content: {
 		flexGrow: 1,
 		padding: theme.spacing(3),
+		display: 'flex',
+		flexDirection: 'column',
+		alignItems: 'center',
 	},
 	change__view: {
-		margin: '2% auto',
+		margin: '-1% auto 3% auto',
+		display: 'flex',
+		justifyContent: 'center',
+		alignItems: 'center',
+		width: '100%',
+	},
+	change__view_button: {
+		marginRight: '1%',
+	},
+	item__container: {
+		width: '100%',
 	},
 }));
 
@@ -76,6 +93,10 @@ function ResponsiveDrawer(props) {
 
 	const handleDrawerToggle = () => {
 		setMobileOpen(!mobileOpen);
+	};
+
+	const handleGrid = () => {
+		isGrid ? setIsGrid(false) : setIsGrid(true);
 	};
 
 	const onCountryChange = val => {
@@ -126,6 +147,7 @@ function ResponsiveDrawer(props) {
 					Math.floor(res.data.pagination.total / res.data.pagination.rows)
 				);
 				setResults(res.data.events);
+				console.log(res.data.events);
 
 				setLoading(false);
 			} else {
@@ -226,16 +248,23 @@ function ResponsiveDrawer(props) {
 			</nav>
 			<main className={classes.content}>
 				<div className={classes.toolbar} />
-				<div className="change__view">
-					<button onClick={() => setIsGrid(true)}>Grid</button>
-					<button onClick={() => setIsGrid(false)}>List</button>
+				<div className={classes.change__view}>
+					<button
+						className={classes.change__view_button}
+						onClick={() => setIsGrid(true)}
+					>
+						<GridOnIcon color={'primary'} fontSize={'large'} />
+					</button>
+					<button onClick={() => setIsGrid(false)}>
+						<ListIcon color={'primary'} fontSize={'large'} />
+					</button>
 				</div>
 
 				{loading ? (
 					<Spinner style={{ margin: '0 auto' }} />
 				) : (
 					<>
-						<div>
+						<div className={classes.item__container}>
 							<ItemList isGrid={isGrid} results={results} />
 						</div>
 						<Pagination count={total} page={page} onPageChange={onPageChange} />
